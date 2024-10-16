@@ -6,6 +6,7 @@
     <title>Seamless Co-op Game Sessions</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
+        /* Fade-in animation */
         .fade-in {
             animation: fadeIn 0.5s;
         }
@@ -13,15 +14,56 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
+
+        /* Dark Theme */
+        body {
+            background-color: #121212;
+            color: #E2E2E2;
+        }
+
+        /* Table Styles */
+        .table-header {
+            background-color: #1F1F1F;
+            color: #A0A0A0;
+        }
+        .table-row {
+            background-color: #1B1B1B;
+            transition: background-color 0.3s;
+        }
+        .table-row:hover {
+            background-color: #242424;
+        }
+        .table-container {
+            background-color: #1A1A1A;
+            border: 1px solid #2A2A2A;
+        }
+
+        /* Credits */
+        .credits {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            color: #A0A0A0;
+            font-size: 0.875rem; /* Text-sm in Tailwind */
+        }
+
+        /* General Layout */
+        .container h1 {
+            color: #E2E2E2;
+        }
+        .container h2 {
+            color: #A0A0A0;
+        }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+<body class="min-h-screen flex items-center justify-center">
     <div class="container mx-auto px-4">
-        <h1 class="text-3xl font-bold mb-6 text-center">Seamless Co-op Game Sessions</h1>
-        <div class="bg-white shadow-md rounded-lg overflow-hidden">
-            <table class="w-full">
+        <h1 class="text-4xl font-bold mb-4 text-center">Seamless Co-op Game Sessions</h1>
+        <h2 class="text-xl font-semibold mb-6 text-center">Seamless Co-op Mod Manager</h2>
+        <div class="shadow-md rounded-lg overflow-hidden table-container p-4">
+            <table class="w-full table-auto">
                 <thead>
-                    <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                    <tr class="table-header text-sm leading-normal uppercase">
                         <th class="py-3 px-6 text-left">Username</th>
                         <th class="py-3 px-6 text-left">Message</th>
                         <th class="py-3 px-6 text-left">Co-op Password</th>
@@ -34,18 +76,27 @@
         </div>
     </div>
 
+    <div class="credits">
+        <p>Created by 2Pz</p>
+    </div>
+
     <script>
-        const API_URL = 'https://2pz.github.io/Seamless-Co-op-Game-Sessions/';
+        const API_URL = 'http://localhost:8000/'; // Ensure the trailing slash is present
 
         function fetchSessions() {
             fetch(API_URL)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     const tableBody = document.getElementById('sessionTableBody');
-                    tableBody.innerHTML = '';
+                    tableBody.innerHTML = ''; // Clear previous rows
                     data.forEach(session => {
                         const row = document.createElement('tr');
-                        row.className = 'border-b border-gray-200 hover:bg-gray-100 fade-in';
+                        row.className = 'table-row border-b border-gray-700 fade-in';
                         row.innerHTML = `
                             <td class="py-3 px-6 text-left whitespace-nowrap">${session.username}</td>
                             <td class="py-3 px-6 text-left">${session.message}</td>
