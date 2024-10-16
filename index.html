@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seamless Co-op Game Sessions</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .fade-in {
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold mb-6 text-center">Seamless Co-op Game Sessions</h1>
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                        <th class="py-3 px-6 text-left">Username</th>
+                        <th class="py-3 px-6 text-left">Message</th>
+                        <th class="py-3 px-6 text-left">Co-op Password</th>
+                    </tr>
+                </thead>
+                <tbody id="sessionTableBody">
+                    <!-- Table rows will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://2pz.github.io/Seamless-Co-op-Game-Sessions/';
+
+        function fetchSessions() {
+            fetch(API_URL)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('sessionTableBody');
+                    tableBody.innerHTML = '';
+                    data.forEach(session => {
+                        const row = document.createElement('tr');
+                        row.className = 'border-b border-gray-200 hover:bg-gray-100 fade-in';
+                        row.innerHTML = `
+                            <td class="py-3 px-6 text-left whitespace-nowrap">${session.username}</td>
+                            <td class="py-3 px-6 text-left">${session.message}</td>
+                            <td class="py-3 px-6 text-left">${session.password}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching sessions:', error));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchSessions();
+            // Refresh the table every 30 seconds
+            setInterval(fetchSessions, 30000);
+        });
+    </script>
+</body>
+</html>
