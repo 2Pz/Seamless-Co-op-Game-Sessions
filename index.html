@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seamless Co-op Game Sessions</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
         /* Fade-in animation */
         .fade-in {
             animation: fadeIn 0.5s;
         }
-
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -27,16 +26,13 @@
             background-color: #1F1F1F;
             color: #A0A0A0;
         }
-
         .table-row {
             background-color: #1B1B1B;
             transition: background-color 0.3s;
         }
-
         .table-row:hover {
             background-color: #242424;
         }
-
         .table-container {
             background-color: #1A1A1A;
             border: 1px solid #2A2A2A;
@@ -55,7 +51,6 @@
         .container h1 {
             color: #E2E2E2;
         }
-
         .container h2 {
             color: #A0A0A0;
         }
@@ -65,7 +60,6 @@
     <div class="container mx-auto px-4">
         <h1 class="text-4xl font-bold mb-4 text-center">Seamless Co-op Game Sessions</h1>
         <h2 class="text-xl font-semibold mb-6 text-center">Seamless Co-op Mod Manager</h2>
-        
         <div class="shadow-md rounded-lg overflow-hidden table-container p-4">
             <table class="w-full table-auto">
                 <thead>
@@ -76,54 +70,49 @@
                     </tr>
                 </thead>
                 <tbody id="sessionTableBody">
-                    <!-- Sessions will be dynamically inserted here -->
+                    <!-- Table rows will be dynamically added here -->
                 </tbody>
             </table>
         </div>
     </div>
 
     <div class="credits">
-        Created by 2Pz
+        <p>Created by 2Pz</p>
     </div>
 
     <script>
-        // Establish WebSocket connection
-        const socket = new WebSocket('ws://localhost:8000/ws');
-        
-        socket.onmessage = function(event) {
-            const sessions = JSON.parse(event.data);
-            updateSessionTable(sessions);
-        };
+        const API_URL = 'http://127.0.0.1:8000'; // Ensure the trailing slash is present http://127.0.0.1:8000
 
-        socket.onerror = function(error) {
-            console.error('WebSocket Error:', error);
-        };
-
-        socket.onclose = function(event) {
-            console.log('WebSocket connection closed:', event);
-        };
-
-        // Fetch initial sessions data
-        fetch('http://localhost:8000/api/sessions')
-            .then(response => response.json())
-            .then(sessions => updateSessionTable(sessions))
-            .catch(error => console.error('Error fetching sessions:', error));
-
-        // Function to update the session table
-        function updateSessionTable(sessions) {
-            const tableBody = document.getElementById('sessionTableBody');
-            tableBody.innerHTML = ''; // Clear previous rows
-            sessions.forEach(session => {
-                const row = document.createElement('tr');
-                row.className = 'table-row border-b border-gray-700 fade-in';
-                row.innerHTML = `
-                    <td class="py-3 px-6 text-left whitespace-nowrap">${session.username}</td>
-                    <td class="py-3 px-6 text-left">${session.message}</td>
-                    <td class="py-3 px-6 text-left">${session.password}</td>
-                `;
-                tableBody.appendChild(row);
-            });
+        function fetchSessions() {
+            fetch(API_URL)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const tableBody = document.getElementById('sessionTableBody');
+                    tableBody.innerHTML = ''; // Clear previous rows
+                    data.forEach(session => {
+                        const row = document.createElement('tr');
+                        row.className = 'table-row border-b border-gray-700 fade-in';
+                        row.innerHTML = `
+                            <td class="py-3 px-6 text-left whitespace-nowrap">${session.username}</td>
+                            <td class="py-3 px-6 text-left">${session.message}</td>
+                            <td class="py-3 px-6 text-left">${session.password}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching sessions:', error));
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchSessions();
+            // Refresh the table every 30 seconds
+            setInterval(fetchSessions, 30000);
+        });
     </script>
 </body>
 </html>
