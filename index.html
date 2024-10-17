@@ -81,38 +81,59 @@
     </div>
 
     <script>
-        const API_URL = 'https://seamless-co-op-game-sessions.onrender.com'; // Ensure the trailing slash is present http://127.0.0.1:8000
+        const API_URL = 'https://seamless-co-op-game-sessions.onrender.com'; // Ensure the trailing slash is present
+        let lastUpdateTime = 0;
 
-        function fetchSessions() {
-            fetch(API_URL)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok ' + response.statusText);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    const tableBody = document.getElementById('sessionTableBody');
-                    tableBody.innerHTML = ''; // Clear previous rows
-                    data.forEach(session => {
-                        const row = document.createElement('tr');
-                        row.className = 'table-row border-b border-gray-700 fade-in';
-                        row.innerHTML = `
-                            <td class="py-3 px-6 text-left whitespace-nowrap">${session.username}</td>
-                            <td class="py-3 px-6 text-left">${session.message}</td>
-                            <td class="py-3 px-6 text-left">${session.password}</td>
-                        `;
-                        tableBody.appendChild(row);
-                    });
-                })
-                .catch(error => console.error('Error fetching sessions:', error));
+        function updateTable(data) {
+            const tableBody = document.getElementById('sessionTableBody');
+            tableBody.innerHTML = ''; // Clear previous rows
+            data.forEach(session => {
+                const row = document.createElement('tr');
+                row.className = 'table-row border-b border-gray-700 fade-in';
+                row.innerHTML = `
+                    <td class="py-3 px-6 text-left whitespace-nowrap">${session.username}</td>
+                    <td class="py-3 px-6 text-left">${session.message}</td>
+                    <td class="py-3 px-6 text-left">${session.password}</td>
+                `;
+                tableBody.appendChild(row);
+            });
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchSessions();
-            // Refresh the table every 30 seconds
-            setInterval(fetchSessions, 30000);
-        });
+        async function longPoll() {
+            try {
+                const response = await fetch(`${API_URL}/long_poll?last_update=${lastUpdateTime}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                const data = await response.json();
+                if (data.updates) {
+                    updateTable(data.sessions);
+                    lastUpdateTime = data.last_update;
+                }
+            } catch (error) {
+                console.error('Error in long polling:', error);
+            }
+            // Immediately start the next long poll
+            longPoll();
+        }
+
+        async function initialFetch() {
+            try {
+                const response = await fetch(`${API_URL}/`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                const data = await response.json();
+                updateTable(data);
+                lastUpdateTime = Date.now() / 1000; // Convert to seconds to match server time
+                // Start long polling after initial fetch
+                longPoll();
+            } catch (error) {
+                console.error('Error fetching initial data:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initialFetch);
     </script>
 </body>
 </html>
