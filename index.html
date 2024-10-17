@@ -87,6 +87,7 @@
     </div>
 
     <script>
+        // Establish WebSocket connection
         const socket = new WebSocket('ws://localhost:8000/ws');
         
         socket.onmessage = function(event) {
@@ -94,6 +95,21 @@
             updateSessionTable(sessions);
         };
 
+        socket.onerror = function(error) {
+            console.error('WebSocket Error:', error);
+        };
+
+        socket.onclose = function(event) {
+            console.log('WebSocket connection closed:', event);
+        };
+
+        // Fetch initial sessions data
+        fetch('http://localhost:8000/api/sessions')
+            .then(response => response.json())
+            .then(sessions => updateSessionTable(sessions))
+            .catch(error => console.error('Error fetching sessions:', error));
+
+        // Function to update the session table
         function updateSessionTable(sessions) {
             const tableBody = document.getElementById('sessionTableBody');
             tableBody.innerHTML = ''; // Clear previous rows
@@ -108,11 +124,6 @@
                 tableBody.appendChild(row);
             });
         }
-
-        // Initial fetch of sessions
-        fetch('http://localhost:8000/api/sessions')
-            .then(response => response.json())
-            .then(sessions => updateSessionTable(sessions));
     </script>
 </body>
 </html>
