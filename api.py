@@ -31,9 +31,6 @@ async def get_sessions_json():
 @app.post("/api/add_session")
 async def add_session(session: Session):
     global last_update_time, update_event
-    for existing_session in sessions:
-        if existing_session.username == session.username:
-            raise HTTPException(status_code=400, detail="Username already exists")
     sessions.append(session)
     last_update_time = time.time()
     update_event.set()
