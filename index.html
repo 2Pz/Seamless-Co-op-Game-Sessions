@@ -44,7 +44,7 @@
             bottom: 16px;
             right: 16px;
             color: #A0A0A0;
-            font-size: 0.875rem; /* Text-sm in Tailwind */
+            font-size: 0.875rem;
         }
 
         /* General Layout */
@@ -54,7 +54,42 @@
         .container h2 {
             color: #A0A0A0;
         }
-    </style>
+
+        /* Popup Styles */
+        .popup {
+        display: none;
+        position: absolute;
+        background-color: #1A1A1A;
+        border: 1px solid #2A2A2A;
+        padding: 20px;
+        z-index: 1000;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        max-width: 300px;
+    }
+    .popup-content table {
+        border-collapse: separate;
+        border-spacing: 0 8px;
+    }
+    .popup-content td {
+        padding: 4px 8px;
+    }
+    .popup-content td:first-child {
+        font-weight: bold;
+        color: #A0A0A0;
+    }
+    .close-popup {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        cursor: pointer;
+        font-size: 20px;
+        color: #A0A0A0;
+    }
+    .close-popup:hover {
+        color: #E2E2E2;
+    }
+</style>
 </head>
 <body class="min-h-screen flex items-center justify-center">
     <div class="container mx-auto px-4">
@@ -80,24 +115,78 @@
         <p>Created by 2Pz</p>
     </div>
 
+    <div id="statsPopup" class="popup">
+        <span class="close-popup" onclick="closePopup()">&times;</span>
+        <div id="popupContent" class="popup-content"></div>
+    </div>
+
     <script>
-        const API_URL = 'https://seamless-co-op-game-sessions.onrender.com'; // Ensure the trailing slash is present
+        const API_URL = 'http://127.0.0.1:8000'; // Ensure the trailing slash is present https://seamless-co-op-game-sessions.onrender.com
         let lastUpdateTime = 0;
 
         function updateTable(data) {
-            const tableBody = document.getElementById('sessionTableBody');
-            tableBody.innerHTML = ''; // Clear previous rows
-            data.forEach(session => {
-                const row = document.createElement('tr');
-                row.className = 'table-row border-b border-gray-700 fade-in';
-                row.innerHTML = `
-                    <td class="py-3 px-6 text-left whitespace-nowrap">${session.username}</td>
-                    <td class="py-3 px-6 text-left">${session.message}</td>
-                    <td class="py-3 px-6 text-left">${session.password}</td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
+			const tableBody = document.getElementById('sessionTableBody');
+			tableBody.innerHTML = '';
+			data.forEach(session => {
+				const row = document.createElement('tr');
+				row.className = 'table-row border-b border-gray-700 fade-in';
+				row.innerHTML = `
+					<td class="py-3 px-6 text-left whitespace-nowrap">
+						<span class="cursor-pointer hover:underline" onclick="showStats('${session.username}', ${JSON.stringify(session.stats).replace(/"/g, '&quot;')}, ${session.level}, event)">
+							${session.username}
+						</span>
+					</td>
+					<td class="py-3 px-6 text-left">${session.message}</td>
+					<td class="py-3 px-6 text-left">${session.password}</td>
+				`;
+				tableBody.appendChild(row);
+			});
+		}
+
+        function showStats(username, stats, level, event) {
+			const popup = document.getElementById('statsPopup');
+			const content = document.getElementById('popupContent');
+			
+			const statOrder = ['Vigor', 'Mind', 'Endurance', 'Strength', 'Dexterity', 'Intelligence', 'Faith', 'Arcane'];
+			
+			let statsHtml = `<span class="close-popup" onclick="closePopup()">&times;</span>`;
+			statsHtml += `<h2 class="text-xl font-bold mb-4">${username}</h2>`;
+			statsHtml += `<p class="mb-4">Level: ${level}</p>`;
+			statsHtml += '<table class="w-full">';
+			statOrder.forEach(stat => {
+				statsHtml += `
+					<tr>
+						<td class="w-1/2">${stat}</td>
+						<td class="w-1/2 text-right">${stats[stat] || 'N/A'}</td>
+					</tr>
+				`;
+			});
+			statsHtml += '</table>';
+
+			content.innerHTML = statsHtml;
+			popup.style.display = 'block';
+			
+			// Position the popup at the click location
+			const rect = event.target.getBoundingClientRect();
+			popup.style.left = `${rect.left}px`;
+			popup.style.top = `${rect.bottom + window.scrollY}px`;
+
+			// Stop event propagation
+			event.stopPropagation();
+		}
+
+		// Add this function to close the popup
+		function closePopup() {
+			document.getElementById('statsPopup').style.display = 'none';
+		}
+
+		// Add this event listener at the end of your script
+		document.addEventListener('click', function(event) {
+			const popup = document.getElementById('statsPopup');
+			if (popup.style.display === 'block' && !popup.contains(event.target)) {
+				closePopup();
+			}
+		});
 
         async function longPoll() {
             try {
@@ -134,6 +223,14 @@
         }
 
         document.addEventListener('DOMContentLoaded', initialFetch);
+
+        // Close popup when clicking outside of it
+        window.onclick = function(event) {
+            const popup = document.getElementById('statsPopup');
+            if (event.target == popup) {
+                closePopup();
+            }
+        }
     </script>
 </body>
 </html>
