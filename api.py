@@ -1,24 +1,23 @@
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
-from typing import List
+from typing import List, Dict
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 import time
 
 app = FastAPI()
 
-sessions = []
-last_update_time = time.time()
-update_event = asyncio.Event()
-
 class Session(BaseModel):
     username: str
     message: str
     password: str
+    level: int
+    stats: Dict[str, int]
 
 class RemoveSession(BaseModel):
     username: str
     action: str
+    
 
 @app.get("/")
 async def get_sessions():
@@ -27,6 +26,10 @@ async def get_sessions():
 @app.get("/sessions.json")
 async def get_sessions_json():
     return sessions
+
+sessions = []
+last_update_time = time.time()
+update_event = asyncio.Event()
 
 @app.post("/api/add_session")
 async def add_session(session: Session):
@@ -79,7 +82,7 @@ async def long_poll(last_update: float, background_tasks: BackgroundTasks):
 # Update CORS settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://2pz.github.io"],  # Replace with your frontend domain
+    allow_origins=["*"],  # allow_origins=["https://2pz.github.io"]
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
