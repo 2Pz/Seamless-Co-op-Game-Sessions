@@ -82,7 +82,7 @@ async def long_poll(last_update: float, background_tasks: BackgroundTasks):
 # Update CORS settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # allow_origins=["https://2pz.github.io"]
+    allow_origins=["https://2pz.github.io"],  # allow_origins=["https://2pz.github.io"]
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
