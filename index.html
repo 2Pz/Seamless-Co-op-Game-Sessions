@@ -147,17 +147,26 @@
 			const popup = document.getElementById('statsPopup');
 			const content = document.getElementById('popupContent');
 			
-			const statOrder = ['Vigor', 'Mind', 'Endurance', 'Strength', 'Dexterity', 'Intelligence', 'Faith', 'Arcane'];
+			const statMapping = {
+                'Vigor': 'vigor',
+                'Mind': 'mind',
+                'Endurance': 'endurance',
+                'Strength': 'strength',
+                'Dexterity': 'dexterity',
+                'Intelligence': 'intelligence',
+                'Faith': 'faith',
+                'Arcane': 'arcane'
+            };
 			
 			let statsHtml = `<span class="close-popup" onclick="closePopup()">&times;</span>`;
 			statsHtml += `<h2 class="text-xl font-bold mb-4">${username}</h2>`;
 			statsHtml += `<p class="mb-4">Level: ${level}</p>`;
 			statsHtml += '<table class="w-full">';
-			statOrder.forEach(stat => {
+			Object.entries(statMapping).forEach(([displayName, propName]) => {
 				statsHtml += `
 					<tr>
-						<td class="w-1/2">${stat}</td>
-						<td class="w-1/2 text-right">${stats[stat] || 'N/A'}</td>
+						<td class="w-1/2">${displayName}</td>
+						<td class="w-1/2 text-right">${stats[propName] || 'N/A'}</td>
 					</tr>
 				`;
 			});
