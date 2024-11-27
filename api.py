@@ -1,23 +1,66 @@
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List, Dict, Optional
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 import time
 
 app = FastAPI()
 
+class Equipment(BaseModel):
+    primary_left_wep: int = 0
+    primary_right_wep: int = 0
+    secondary_left_wep: int = 0
+    secondary_right_wep: int = 0
+    tertiary_left_wep: int = 0
+    tertiary_right_wep: int = 0
+    primary_arrow: int = 0
+    primary_bolt: int = 0
+    secondary_arrow: int = 0
+    secondary_bolt: int = 0
+    tertiary_arrow: int = 0
+    tertiary_bolt: int = 0
+    helmet: int = 0
+    armor: int = 0
+    gauntlet: int = 0
+    leggings: int = 0
+    hair: int = 0
+    accessory_1: int = 0
+    accessory_2: int = 0
+    accessory_3: int = 0
+    accessory_4: int = 0
+    accessory_5: int = 0
+
+class PlayerStats(BaseModel):
+    name: str
+    level: int
+    reinforce_level: int = 0
+    health: int = 0
+    max_hp: int = 0
+    max_fp: int = 0
+    max_stamina: int = 0
+    character_type: int = 0
+    team_type: int = 0
+    vigor: int = 0
+    mind: int = 0
+    endurance: int = 0
+    strength: int = 0
+    dexterity: int = 0
+    intelligence: int = 0
+    faith: int = 0
+    arcane: int = 0
+    equipment: Equipment = Equipment()
+
 class Session(BaseModel):
     username: str
     message: str
     password: str
     level: int
-    stats: Dict[str, int]
+    stats: PlayerStats
 
 class RemoveSession(BaseModel):
     username: str
     action: str
-    
 
 @app.get("/")
 async def get_sessions():
@@ -82,7 +125,7 @@ async def long_poll(last_update: float, background_tasks: BackgroundTasks):
 # Update CORS settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://2pz.github.io"],  # allow_origins=["https://2pz.github.io"]
+    allow_origins=["*"],  # allow_origins=["https://2pz.github.io"]
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
